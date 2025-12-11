@@ -491,9 +491,9 @@ Perform these administrative tasks for a complete setup.
 <img width="1024" height="1024" alt="image" src="https://github.com/user-attachments/assets/bf0f31b9-c8f8-4c6b-b90a-4e99666bd033" />
  
 
-# 🖥️ Server & Services Lead 
+# Server & Services Lead 
 
-## ✅ 1. Full Server List + Purpose
+##  1. Full Server List + Purpose
  
 - **DC1 – Primary Domain Controller**  
  
@@ -529,7 +529,7 @@ Perform these administrative tasks for a complete setup.
 
 ---
 
-## ✅ 2. Roles & Features Installed
+## 2. Roles & Features Installed
  
 - **DC1/DC2** → Active Directory Domain Services (AD DS), DNS role  
  
@@ -545,7 +545,7 @@ Perform these administrative tasks for a complete setup.
 
 ---
 
-## ✅ 3. File Share Layout Planning
+##  3. File Share Layout Planning
 
 | Share Name          | Used By           | Purpose                          |
  
@@ -565,7 +565,7 @@ Perform these administrative tasks for a complete setup.
 
 ---
 
-## ✅ 4. Basic Service Dependency Map
+## 4. Basic Service Dependency Map
  
 - **DHCP → DNS** (DHCP leases must register with DNS for name resolution)  
  
@@ -577,7 +577,7 @@ Perform these administrative tasks for a complete setup.
 
 ---
 
-## ✅ 5. Department Service Requirements Overview
+## 5. Department Service Requirements Overview
 
 | Department             | Services Used                          |
  
@@ -599,7 +599,7 @@ Perform these administrative tasks for a complete setup.
 
 ---
 
-## ℹ️ Additional Details
+##  Additional Details
 
 ### 1. Web Server Choice
  
@@ -636,4 +636,207 @@ Installed on a **dedicated Windows Server**, separate from DC1/DC2.
 - **DHCP** → Installed on **DC1 only**.  
  
 - Ensures high availability for DNS, while DHCP remains simple to manage.
+
+- 
+- **Management:** Full Control to all department shares
+- **IT Admins:** Full Control everywhere
+- **Everyone:** Removed from share access
+
+---
+
+
+---
+
+# Margielos UK — Group Policy Infrastructure Documentation  
+### Domain: **margielos.uk**  
+### Subdomain: **ict.margielos.uk**
+
+---
+
+## 1. Overview of the Environment
+The Margielos UK infrastructure operates on a centralized Active Directory domain (**margielos.uk**) with an IT-managed subdomain (**ict.margielos.uk**) responsible for system administration and policy deployment.
+
+Each department contains **2–3 workstations**, managed through designated Organizational Units (OUs). Group Policy Objects (GPOs) enforce security, data separation, and access control across all systems.
+
+---
+
+## 2. Domain-Wide Security Framework
+A universal security baseline applies to all computers and users across the entire domain.
+
+### Password & Account Security
+- Minimum password length: **12 characters**
+- Password complexity: **Enabled**
+- Password maximum age: **60 days**
+- Account lockout threshold: **5 failed attempts**
+- All guest accounts: **Disabled**
+
+### System & Network Hardening
+- SmartScreen and Microsoft Defender fully enforced
+- Windows Firewall enabled on all profiles
+- **SMBv1 disabled** across domain
+- **UAC enforced at maximum level**
+- RDP access restricted to **IT department only**
+
+### Script & Application Security
+- Unsigned PowerShell scripts blocked (except IT)
+- Windows Store disabled for standard users
+- Consumer Microsoft accounts blocked from domain PCs
+
+**Result:** A hardened domain environment with consistent security applied to every workstation, preventing unauthorized access and configuration tampering.
+
+---
+
+## 3. Workstation Configuration Standards
+All workstations receive a standard configuration through a domain-wide hardening GPO.
+
+### Workstation Behavior
+- Control Panel and Settings hidden for all non-IT users
+- CMD, PowerShell, and registry editing tools blocked in restricted OUs
+- USB storage **disabled** except for IT-approved devices
+- Automatic Windows Updates at **3 AM**
+- OneDrive disabled from auto-launch
+
+**Result:** A stable and tamper-resistant workstation environment in all departments.
+
+---
+
+## 4. Department-Level Policy Outcomes
+
+### A. Inventory & Warehouse
+**OUs:** Inventory Control, Warehouse Operations  
+**Policy Outcomes:**
+- Auto-lock after **5 minutes**
+- Control Panel restricted
+- CMD and PowerShell blocked
+- Registry tools disabled
+- Only approved software allowed
+- Browser homepage set to company intranet
+- Drives mapped:
+  - **I:** `\\DC01\Inventory`
+  - **W:** `\\DC01\Warehouse`
+
+---
+
+### B. Marketing & E-Commerce
+**OUs:** Digital Marketing, E-Commerce Management  
+**Policy Outcomes:**
+- Control Panel allowed
+- Font and approved software installation allowed
+- Extra temp storage for media files
+- Optional USB access
+- Drives:
+  - **M:** `\\DC01\Marketing`
+  - **E:** `\\DC01\Ecommerce`
+
+---
+
+### C. Production Department
+Split into two environments:
+
+#### 1. Design Team
+- Control Panel allowed
+- Can install fonts and design tools
+- Increased temporary storage
+- Drive: **P:** `\\DC01\Production_Design`
+
+#### 2. Production Floor
+- CMD and PowerShell blocked
+- USB devices fully disabled
+- Control Panel restricted
+- Drive: **F:** `\\DC01\Production_Floor`
+
+---
+
+### D. Sales & Customer Service
+**OUs:** Sales Floor, Customer Service Desk  
+**Policy Outcomes:**
+- Auto-lock after **10 minutes**
+- Control Panel blocked
+- CMD and PowerShell restricted
+- Only approved software allowed
+- Drives:
+  - **S:** `\\DC01\Sales`
+  - **C:** `\\DC01\CustomerService`
+
+---
+
+### E. Management & HR
+Two separate operating environments:
+
+#### Management
+- Full Control Panel access
+- No operational restrictions
+- Access to **all** shared drives:
+  - I:, W:, T:, M:, E:, P:, F:, S:, C:, H:
+
+#### Human Resources
+- Removable storage blocked
+- Auto-lock after **8 minutes**
+- Drive: **H:** `\\DC01\HR`
+- Protected environment for confidential data
+
+---
+
+## 5. Shared Drive Architecture
+
+### Folder Structure
+Located on the file server (DC01):
+
+
+### Drive Mapping Table
+
+| Department            | Drive Letter | Path                              |
+|----------------------|-------------|-----------------------------------|
+| Inventory            | I:          | \\DC01\Inventory                  |
+| Warehouse            | W:          | \\DC01\Warehouse                  |
+| IT                   | T:          | \\DC01\IT                         |
+| Marketing            | M:          | \\DC01\Marketing                  |
+| E-Commerce           | E:          | \\DC01\Ecommerce                  |
+| Production Design    | P:          | \\DC01\Production_Design          |
+| Production Floor     | F:          | \\DC01\Production_Floor           |
+| Sales                | S:          | \\DC01\Sales                      |
+| Customer Service     | C:          | \\DC01\CustomerService            |
+| HR                   | H:          | \\DC01\HR                         |
+| Management           | ALL         | All shares                        |
+
+### Permissions Outcome
+- **Department Groups:** Modify permissions to their respective shares
+- **Management:** Full Control to all department shares
+- **IT Admins:** Full Control everywhere
+- **Everyone:** Removed from share access
+
+---
+
+## 6. Additional Security Measures
+These solutions enhance protection beyond GPO policies:
+
+### BitLocker
+Full-disk encryption on all laptops and workstations.
+
+### LAPS (Local Administrator Password Solution)
+Unique rotating local admin passwords on every workstation.
+
+### AppLocker
+Restricts executable, script, and installer execution to approved items only.
+
+### Shadow Copies
+Enabled on all department shares for quick file recovery.
+
+---
+
+## 7. Final Outcome
+The completed GPO deployment provides:
+
+- A **secure and segmented domain** across margielos.uk and ict.margielos.uk  
+- Strict departmental separation with mapped drives and permissions  
+- Consistent workstation security across all 2–3 workstations per department  
+- Hardened systems protected from misuse or unauthorized changes  
+- Centralized file access with reliable permission boundaries  
+- A professional, enterprise-grade configuration suitable for production  
+
+This infrastructure supports operational efficiency, data integrity, and strong security posture across all departments at Margielos UK.
+
+
+
+
 
